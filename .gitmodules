@@ -1,0 +1,3 @@
+[submodule "LD34/Assets/Addons/Synctory"]
+	path = LD34/Assets/Addons/Synctory
+	url = git@github.com:chrismcmath/Synctory-Unity-API.git
