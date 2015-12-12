@@ -62,7 +62,6 @@ public class TextModel : MonoBehaviour {
     }
 
     private string GetChoiceColor() {
-        Debug.LogFormat("_Alpha: {0}", _Alpha);
         return Helper.ColorToHex(new Color(_Alpha, _Alpha, _Alpha));
     }
 }
