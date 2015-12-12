@@ -28,15 +28,17 @@ public class Switcher : MonoBehaviour {
     public Transform B;
 
     public float Period = 1f;
+    public bool TextSwitch = false;
 
     private TransformPair _PairA;
     private TransformPair _PairB;
 
     private float _SwitchTime = 0f;
-
-    public bool Switch = false;
+    private AudioSource _Sfx;
 
     public void Start() {
+        _Sfx = GetComponent<AudioSource>();
+
         _PairA = new TransformPair();
         _PairA.t = A;
 
@@ -45,14 +47,8 @@ public class Switcher : MonoBehaviour {
     }
 
     public void Update() {
-        if (Switch) {
-            _SwitchTime = Time.realtimeSinceStartup;
-
-            Vector3 targetA = _PairA.Target;
-            _PairA.Target = _PairB.Target;
-            _PairB.Target = targetA;
-
-            Switch = false;
+        if (TextSwitch) {
+            Switch();
         }
 
         float delta = (Time.realtimeSinceStartup - _SwitchTime) / Period;
@@ -63,6 +59,17 @@ public class Switcher : MonoBehaviour {
             SnapPair(_PairA);
             SnapPair(_PairB);
         }
+    }
+
+    public void Switch() {
+        _SwitchTime = Time.realtimeSinceStartup;
+
+        Vector3 targetA = _PairA.Target;
+        _PairA.Target = _PairB.Target;
+        _PairB.Target = targetA;
+
+        _Sfx.Play();
+        TextSwitch = false;
     }
 
     private void TweenPair(TransformPair pair, float delta) {
