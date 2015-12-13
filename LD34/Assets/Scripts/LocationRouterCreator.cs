@@ -5,7 +5,7 @@ using Synctory.Routers;
 
 public class LocationRouterCreator : MonoBehaviour {
 
-	void Start () {
+	void Awake () {
         for (int i = 0; i < Synctory.Synctory.LocationsRoot.transform.childCount; i++) {
             GameObject go = new GameObject();
             go.transform.parent = transform;

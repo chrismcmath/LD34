@@ -33,8 +33,9 @@ public class Switcher : MonoBehaviour {
     private TransformPair _PairA;
     private TransformPair _PairB;
 
-    private float _SwitchTime = 0f;
     private AudioSource _Sfx;
+    private float _SwitchTime = 0f;
+    private bool _Snapped = true;
 
     public void Start() {
         _Sfx = GetComponent<AudioSource>();
@@ -55,7 +56,7 @@ public class Switcher : MonoBehaviour {
         if (delta < 1f) {
             TweenPair(_PairA, delta);
             TweenPair(_PairB, delta);
-        } else {
+        } else if (!_Snapped) {
             SnapPair(_PairA);
             SnapPair(_PairB);
         }
@@ -70,6 +71,7 @@ public class Switcher : MonoBehaviour {
 
         _Sfx.Play();
         TextSwitch = false;
+        _Snapped = false;
     }
 
     private void TweenPair(TransformPair pair, float delta) {
@@ -85,6 +87,7 @@ public class Switcher : MonoBehaviour {
     private void SnapPair(TransformPair pair) {
         pair.t.position = pair.Target;
         pair.t.localScale = Vector3.one;
+        _Snapped = true;
     }
 
 }

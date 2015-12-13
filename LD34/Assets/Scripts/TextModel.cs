@@ -2,24 +2,17 @@
 using UnityEngine.UI;
 using System.Collections;
 
-public abstract class TextModel : MonoBehaviour {
+public abstract class TextViewModel : MonoBehaviour {
     public float TweenSpeed = 1.5f;
 
     protected string _Model;
-    protected string _CurrentLine;
     protected Text _Text;
 
     protected float _Alpha = 0f;
     protected bool _AlphaTweenFlipFlop = false;
 
-	void Start () {
+	void Awake () {
         _Text = GetComponent<Text>();
-	}
-	
-    public void AddLine(string line) {
-        _Model += FormatLine(_CurrentLine);
-
-        _CurrentLine = line;
     }
 
     protected void UpdateAlpha() {
