@@ -3,14 +3,29 @@ using UnityEngine.UI;
 using System.Collections;
 
 public class ChoiceViewModel : TextViewModel {
+    public delegate void ChoiceHandler(ChoiceTuple choice);
 
-    public Color ColorA;
+    public static event ChoiceHandler OnChoiceSelected;
 
     private ChoiceTuple _Tuple;
+
+    public void Start() {
+        ChoiceViewModel.OnChoiceSelected += WipeChoice;
+    }
 
     public void SetTuple(ChoiceTuple tuple) {
         _Tuple = tuple;
         UpdateText();
+    }
+
+    public void Select() {
+        if (OnChoiceSelected != null) {
+            OnChoiceSelected(_Tuple);
+        }
+    }
+
+    public void WipeChoice(ChoiceTuple tuple) {
+        _Text.text = string.Empty;
     }
 
     private void UpdateText() {
@@ -25,11 +40,5 @@ public class ChoiceViewModel : TextViewModel {
 
     private string FormatStaticLine(string line) {
         return FormatLine(line, GetCurrentColor());
-    }
-
-    private string GetCurrentColor() {
-        if (true) {
-            return Helper.ColorToHex(ColorA);
-        }
     }
 }

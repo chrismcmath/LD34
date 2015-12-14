@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 using System;
 using System.Collections;
@@ -15,13 +16,35 @@ public class UPDDiscoverer : MonoBehaviour {
     public int DiscoveyBroadcastPort = 3001;
     public int DiscoveryListenPort = 19784;
 
-    public Transform HostList = null;
+    public UDPConnectionRequest _Request;
+
+    public Text Text;
+    private bool _StartHost = false;
     private List<string> _DiscoveredIPs = new List<string>();
-    private bool _RebuildHostList = false;
+    private string IPString;
+    private string AppendString = string.Empty;
 
     public void Start() {
+        _Request = gameObject.AddComponent<UDPConnectionRequest>();
+        _Request.Text = Text;
+        IPString = Network.player.ipAddress;
+
         Broadcast();
         Listen();
+    }
+
+    public void Update() {
+        if (AppendString != string.Empty) {
+            Text.text += AppendString + "\n";
+            AppendString = string.Empty;
+        }
+
+        if (_StartHost) {
+            _StartHost = false;
+            GetComponent<NetworkManager>().StartHost();
+            StepController.ThisPlayer = StepController.Player.TWO;
+            _Request.SendData();
+        }
     }
 
     public void Broadcast() {
@@ -36,6 +59,7 @@ public class UPDDiscoverer : MonoBehaviour {
                 DiscoveyBroadcastPort++;
             }
         }
+
         IPEndPoint groupEP = new IPEndPoint(IPAddress.Broadcast, DiscoveryListenPort);
         DiscoveryBroadcaster.Connect(groupEP);
 
@@ -49,12 +73,9 @@ public class UPDDiscoverer : MonoBehaviour {
     }
 
     public void SendData () {
-        Debug.LogFormat("try send data");
-        string customMessage = Network.player.ipAddress;
-
-        if (customMessage != "") {
-            Debug.Log("[DISCOVERY] sending " + customMessage);
-            DiscoveryBroadcaster.Send(Encoding.ASCII.GetBytes(customMessage), customMessage.Length);
+        if (!NetworkClient.active && !NetworkServer.active) {
+            Debug.Log("[DISCOVERY] sending " + IPString);
+            DiscoveryBroadcaster.Send(Encoding.ASCII.GetBytes(IPString), IPString.Length);
         }
     }
 
@@ -82,40 +103,16 @@ public class UPDDiscoverer : MonoBehaviour {
         string receivedString = Encoding.ASCII.GetString(received);
 
         if (!_DiscoveredIPs.Contains(receivedString) &&
-                receivedString != Network.player.ipAddress) {
+                receivedString != IPString) {
             Debug.Log("[DISCOVERY] found " + receivedString + ", _DiscoveredIPs count now " + _DiscoveredIPs.Count);
+            AppendString = "[DISCOVERY] found " + receivedString + ", _DiscoveredIPs count now " + _DiscoveredIPs.Count;
+
+            _StartHost = true;
             _DiscoveredIPs.Add(receivedString);
-            _RebuildHostList = true;
+            return;
         }
-    }
 
-    public void Update() {
-        if (_RebuildHostList) {
-            RebuildHostList();
-            _RebuildHostList = false;
-        }
-    }
-
-    private void RebuildHostList() {
-		if (HostList == null)
-						return;
-        foreach (Transform child in HostList) {
-            GameObject.Destroy(child.gameObject);
-        }	
-
-        int i = 0;
-        foreach (string ip in _DiscoveredIPs)
-		{
-			if(ip != Network.player.ipAddress)
-			{
-            	GameObject hostIP = (GameObject) Instantiate(Resources.Load("UI/host_ip"));
-            	RectTransform rectTransform = hostIP.transform as RectTransform;
-            	rectTransform.SetParent (HostList);
-            	rectTransform.localPosition = new Vector3(0f, rectTransform.rect.height * i, 0f);
-            	Text text = hostIP.GetComponentInChildren<Text>();
-            	text.text = ip;
-            	i++;
-			}
-        }
+        AppendString = string.Format("Appended: {0}, received: {1}, this: {2}", _DiscoveredIPs.Contains(receivedString), receivedString, IPString);
+        AppendString += " : Ignored ";
     }
 }
